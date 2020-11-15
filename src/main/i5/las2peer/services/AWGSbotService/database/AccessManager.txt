@@ -1,0 +1,32 @@
+package i5.las2peer.services.AWGSbotService.database;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import i5.las2peer.services.AWGSbotService.AWGSbotServiceMainClass;
+import i5.las2peer.services.AWGSbotService.item.Item;
+
+public class AccessManager {
+	
+	public ArrayList<Item> getItems() {
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		Database db = new Database();
+		//AWGSbotServiceMainClass db = new AWGSbotServiceMainClass(); 
+		Connection con = null;
+		try {
+			con = db.getConnection();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		AccessItem access = new AccessItem();
+		try {
+			itemList = access.getItems(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return itemList;
+	}
+}
