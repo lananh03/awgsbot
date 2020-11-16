@@ -11,7 +11,7 @@ public class AccessManager {
 	
 	public ArrayList<Item> getItems() {
 		ArrayList<Item> itemList = new ArrayList<Item>();
-		Database db = new Database();
+		//Database db = new Database();
 		//AWGSbotServiceMainClass db = new AWGSbotServiceMainClass(); 
 		Connection con = null;
 		try {

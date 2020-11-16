@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -58,30 +59,16 @@ public class AWGSbotServiceMainClass extends RESTService {
 	private String dbName;
 	private Database database;
 	
-	public AWGSbotServiceMainClass() throws SQLException {
+	public AWGSbotServiceMainClass() {
 		super();
 		//read and set properties values
 		setFieldValues();
+		
 	}
 	
-	public ArrayList<Item> getItems() {
-		ArrayList<Item> itemList = new ArrayList<Item>();
+	public Connection conDB() throws Exception {
 		this.database = new Database(this.dbUser, this.dbPassword, this.dbHost, this.dbPort, this.dbName);
-		Connection con = null;
-		try {
-			con = database.getConnection();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		AccessItem access = new AccessItem();
-		try {
-			itemList = access.getItems(con);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return itemList;
+		return database.getConnection();
 	}
 	
 	@GET
@@ -93,7 +80,6 @@ public class AWGSbotServiceMainClass extends RESTService {
 	
 	public Response getAWGSitems() throws Throwable {
 		String items = null;
-		System.out.println(dbUser + dbPassword + dbHost + dbPort + dbName);
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
 			itemList = this.getItems();
@@ -104,6 +90,51 @@ public class AWGSbotServiceMainClass extends RESTService {
 			e.printStackTrace();
 		}
 		return Response.ok().entity(items).build();
+	}
+	
+	public ArrayList<Item> getItems() throws Exception {
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		AccessItem access = new AccessItem();
+		try {
+			itemList = access.getItems(conDB());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return itemList;
+	}
+		
+	@GET
+	@Path("/items/{owner}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Get the AWGS items of the owner",
+			notes = "")
+	
+	public Response getAWGSitemsbyOwner(@PathParam("owner") String owner) throws Throwable {
+		String items = null;
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		try {
+			itemList = this.getItemsbyOwner(owner);
+			Gson gson = new Gson();
+			items = gson.toJson(itemList);
+			System.out.println(items);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Response.ok().entity(items).build();
+	}
+	
+	public ArrayList<Item> getItemsbyOwner(String owner) throws Exception {
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		AccessItem access = new AccessItem();
+		try {
+			itemList = access.getItemsbyOwner(conDB(),owner);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return itemList;
 	}
 
 

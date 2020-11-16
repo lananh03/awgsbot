@@ -8,10 +8,21 @@ import i5.las2peer.services.AWGSbotService.item.Item;
 public class AccessItem {
 	
 	public ArrayList<Item> getItems(Connection con) throws SQLException {
-		ArrayList<Item> itemList = new ArrayList<Item>();
 		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM");
-		//Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery();
+		
+		return this.xQuery(rs);
+	}
+	
+	public ArrayList<Item> getItemsbyOwner(Connection con, String owner) throws SQLException {
+		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM WHERE owner like'" + "%" + owner + "%" + "'");
+		ResultSet rs = stmt.executeQuery();
+		
+		return this.xQuery(rs);
+	}
+	
+	public ArrayList<Item> xQuery (ResultSet rs) {
+		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
 			while (rs.next()) {
 				Item itemObj = new Item();
@@ -26,7 +37,6 @@ public class AccessItem {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
 		return itemList;
 	}
 }

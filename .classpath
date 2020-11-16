@@ -6,5 +6,6 @@
 	<classpathentry kind="src" path="/Social Bot Manager"/>
 	<classpathentry kind="lib" path="/Social Bot Manager/lib/las2peer-bundle-0.8.3.jar"/>
 	<classpathentry kind="lib" path="/Social Bot Manager/servicebundle/gson-2.8.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="/las2peer getWeather Service/lib/las2peer-bundle-0.8.3.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
