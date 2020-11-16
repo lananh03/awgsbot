@@ -105,17 +105,17 @@ public class AWGSbotServiceMainClass extends RESTService {
 	}
 		
 	@GET
-	@Path("/items/{owner}")
+	@Path("/items/{query}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(
-			value = "Get the AWGS items of the owner",
+			value = "Search the AWGS items which has phrase query",
 			notes = "")
 	
-	public Response getAWGSitemsbyOwner(@PathParam("owner") String owner) throws Throwable {
+	public Response searchAWGSItemsbyQuery(@PathParam("query") String query) throws Throwable {
 		String items = null;
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
-			itemList = this.getItemsbyOwner(owner);
+			itemList = this.searchItemsbyQuery(query);
 			Gson gson = new Gson();
 			items = gson.toJson(itemList);
 			System.out.println(items);
@@ -125,11 +125,57 @@ public class AWGSbotServiceMainClass extends RESTService {
 		return Response.ok().entity(items).build();
 	}
 	
-	public ArrayList<Item> getItemsbyOwner(String owner) throws Exception {
+	public ArrayList<Item> searchItemsbyQuery(String query) throws Exception {
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		AccessItem access = new AccessItem();
 		try {
-			itemList = access.getItemsbyOwner(conDB(),owner);
+			itemList = access.searchItemsbyQuery(conDB(),query);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return itemList;
+	}
+
+	@GET
+	@Path("/items/{tabname}/{query}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Get the AWGS items by id/owner/url",
+			notes = "")
+	
+	public Response getAWGSItemsbyQuery(@PathParam("tabname") String tabname, @PathParam("query") String query) throws Throwable {
+		String items = null;
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		try {
+			itemList = this.getItemsbyQuery(tabname, query);
+			Gson gson = new Gson();
+			items = gson.toJson(itemList);
+			System.out.println(items);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Response.ok().entity(items).build();
+	}
+	
+	public ArrayList<Item> getItemsbyQuery(String tabname, String query) throws Exception {
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		AccessItem access = new AccessItem();
+		try {
+			switch(tabname) {
+			  case "id":
+				itemList = access.getItemsbyId(conDB(),query);
+			    break;
+			  case "owner":
+				itemList = access.getItemsbyOwner(conDB(),query);
+			    break;
+			  case "url":
+					itemList = access.getItemsbyUrl(conDB(),query);
+				    break;
+			  default:
+			    // code block
+			}
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
