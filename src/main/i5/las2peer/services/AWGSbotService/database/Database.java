@@ -25,7 +25,7 @@ public class Database {
         	Connection connection = null;
             Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
             connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-            System.out.println("OK");
+            //System.out.println("OK");
             return connection;
         } catch (Exception e) {
             throw e;

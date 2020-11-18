@@ -17,7 +17,7 @@ public class AccessItem {
 	
 	// get item by id
 	public ArrayList<Item> getItemsbyId(Connection con, String id) throws SQLException {
-		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM WHERE id like'" + "%" + id + "%" + "'ORDER BY id DESC");
+		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM WHERE id ='" + id + "'ORDER BY id DESC");
 		ResultSet rs = stmt.executeQuery();
 		
 		return this.xQuery(rs);
@@ -25,7 +25,7 @@ public class AccessItem {
 	
 	// get items by owner
 	public ArrayList<Item> getItemsbyOwner(Connection con, String owner) throws SQLException {
-		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM WHERE owner like'" + "%" + owner + "%" + "'ORDER BY id DESC");
+		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM WHERE owner ='" + owner + "'ORDER BY id DESC");
 		ResultSet rs = stmt.executeQuery();
 		
 		return this.xQuery(rs);
