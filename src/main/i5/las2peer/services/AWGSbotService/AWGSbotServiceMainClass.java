@@ -25,6 +25,7 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -85,13 +86,10 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response getAWGSitems() throws Throwable {
-		//String items = null;
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		JSONObject text = new JSONObject();	
 		try {
 			itemList = this.getItems();
-			//Gson gson = new Gson();
-			//items = gson.toJson(itemList);
 			text.put("text", itemList);
 	        text.put("closeContext", "true");
 	        return Response.ok().entity(text).build();
@@ -114,13 +112,11 @@ public class AWGSbotServiceMainClass extends RESTService {
 	
 	public Response getAWGSbotitems() {
 		JSONObject text = new JSONObject();	
-		//String items = null;
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
 			itemList = this.getItems();
-			//Gson gson = new Gson();
-			//items = gson.toJson(itemList); 
-			text.put("text", itemList);
+			String gtext = this.gettext(itemList);
+			text.put("text", gtext);
 	        text.put("closeContext", "true");
 	        return Response.status(Status.OK).entity(text).build();
 		} catch (Exception e) {
@@ -151,16 +147,49 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response searchAWGSItemsbyQuery(@PathParam("query") String query) throws Throwable {
-		String items = null;
+		//String items = null;
+		JSONObject text = new JSONObject();
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
 			itemList = this.searchItemsbyQuery(query);
-			Gson gson = new Gson();
-			items = gson.toJson(itemList);
+			//Gson gson = new Gson();
+			//items = gson.toJson(itemList);
+			text.put("text", itemList);
+			text.put("closeContext", "true");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return Response.ok().entity(items).build();
+		return Response.ok().entity(text).build();
+	}
+	
+	@POST
+	@Path("/searchitemsbot")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Search the AWGS items which have phrase <query>",
+			notes = "")
+	
+	public Response searchAWGSbotItemsbyQuery(String body) throws Throwable {
+
+		JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject triggeredBody = (JSONObject) p.parse(body);
+		String query = triggeredBody.getAsString("msg").substring(13);
+		ArrayList<Item> itemList = new ArrayList<Item>();
+		try {
+			itemList = this.searchItemsbyQuery(query);
+			String gtext = this.gettext(itemList);
+			text.put("text", gtext);
+	        text.put("closeContext", "true");
+	        return Response.ok().entity(text).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			text.put("text", "there is something wrong");
+	        text.put("closeContext", "true");
+			return Response.ok().entity(text).build();
+		}
+		
 	}
 	
 	public ArrayList<Item> searchItemsbyQuery(String query) throws Exception {
@@ -179,20 +208,23 @@ public class AWGSbotServiceMainClass extends RESTService {
 	@Path("/items/{tabname}/{query}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(
-			value = "Get the AWGS items by id/owner/url",
+			value = "Get the AWGS items by id/owner/url/name",
 			notes = "")
 	
 	public Response getAWGSItemsbyQuery(@PathParam("tabname") String tabname, @PathParam("query") String query) throws Throwable {
-		String items = null;
+		//String items = null;
+		JSONObject text = new JSONObject();
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
 			itemList = this.getItemsbyQuery(tabname, query);
-			Gson gson = new Gson();
-			items = gson.toJson(itemList);
+			text.put("text", itemList);
+			text.put("closeContext", "true");
+			return Response.ok().entity(text).build();
 		} catch (Exception e) {
 			e.printStackTrace();
+			return Response.ok().entity("Not okay").build();
 		}
-		return Response.ok().entity(items).build();
+		
 	}
 	
 	@POST
@@ -200,23 +232,41 @@ public class AWGSbotServiceMainClass extends RESTService {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(
-			value = "getAWGSbotItemsbyQuery - Get the AWGS items by id",
+			value = "getAWGSbotItemsbyQuery - Get the AWGS items by id/url/name/owner",
 			notes = "")
 	
-	public Response getAWGSbotItemsbyId(String body) throws ParseException {
-		//String items = null;
+	public Response getAWGSbotItemsbyQuery(String body) throws ParseException {
+
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String id = triggeredBody.getAsString("msg").substring(9);
+		String tablname = triggeredBody.getAsString("msg").substring(9,10);
+		String query = "";
+		switch(tablname) {
+		case "i":
+			tablname = "id";
+			query = triggeredBody.getAsString("msg").substring(12);
+			break;
+		case "o":
+			tablname = "owner";
+			query = triggeredBody.getAsString("msg").substring(15);
+			break;
+		case "u":
+			tablname = "url";
+			query = triggeredBody.getAsString("msg").substring(13);
+			break;
+		case "n":
+			tablname = "name";
+			query = triggeredBody.getAsString("msg").substring(14);
+			break;
+		}
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
-			itemList = this.getItemsbyId(id);
-			text.put("text", itemList);
+			itemList = this.getItemsbyQuery(tablname,query);
+			String gtext = this.gettext(itemList);
+			text.put("text", gtext);
 	        text.put("closeContext", "true");
 	        return Response.ok().entity(text).build();
-			//Gson gson = new Gson();
-			//items = gson.toJson(itemList);
 		} catch (Exception e) {
 			e.printStackTrace();
 			text.put("text", "there is something wrong");
@@ -224,18 +274,6 @@ public class AWGSbotServiceMainClass extends RESTService {
 			return Response.ok().entity(text).build();
 		}
 		
-	}
-	
-	public ArrayList<Item> getItemsbyId(String id) throws Exception {
-		ArrayList<Item> itemList = new ArrayList<Item>();
-		AccessItem access = new AccessItem();
-		try {
-			itemList = access.getItemsbyId(conDB(), id);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return itemList;
 	}
 	
 	public ArrayList<Item> getItemsbyQuery(String tabname, String query) throws Exception {
@@ -246,6 +284,9 @@ public class AWGSbotServiceMainClass extends RESTService {
 			  case "id":
 				itemList = access.getItemsbyId(conDB(),query);
 			    break;
+			  case "name":
+				itemList = access.getItemsbyName(conDB(),query);
+				break;
 			  case "owner":
 				itemList = access.getItemsbyOwner(conDB(),query);
 			    break;
@@ -272,15 +313,12 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response getAWGStypes() throws Throwable {
-		//String types = null;
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
 		JSONObject text = new JSONObject();	
 		try {
 			itemTypeList = this.getItemTypes();
 			text.put("text", itemTypeList);
 			text.put("closeContext", "true");
-			//Gson gson = new Gson();
-			//types = gson.toJson(itemTypeList);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -296,15 +334,13 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response getAWGSbottypes() throws Throwable {
-		//String types = null;
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
 		JSONObject text = new JSONObject();	
 		try {
 			itemTypeList = this.getItemTypes();
-			text.put("text", itemTypeList);
+			String gtext = this.getTypetext(itemTypeList);
+			text.put("text", gtext);
 			text.put("closeContext", "true");
-			//Gson gson = new Gson();
-			//types = gson.toJson(itemTypeList);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -332,16 +368,45 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response searchAWGSItemTypesbyQuery(@PathParam("query") String query) throws Throwable {
-		String types = null;
+		JSONObject text = new JSONObject();
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
 		try {
 			itemTypeList = this.searchItemTypesbyQuery(query);
-			Gson gson = new Gson();
-			types = gson.toJson(itemTypeList);
+			text.put("text", itemTypeList);
+			text.put("closeContext", "true");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return Response.ok().entity(types).build();
+		return Response.ok().entity(text).build();
+	}
+	
+	@POST
+	@Path("/searchtypesbot")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Search the AWGS types which have phrase <query>",
+			notes = "")
+	
+	public Response searchAWGSbotTypesbyQuery(String body) throws Throwable {
+
+		JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject triggeredBody = (JSONObject) p.parse(body);
+		String query = triggeredBody.getAsString("msg").substring(13);
+		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
+		try {
+			itemTypeList = this.searchItemTypesbyQuery(query);
+			String gtext = this.getTypetext(itemTypeList);
+			text.put("text", gtext);
+	        return Response.ok().entity(text).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			text.put("text", "there is something wrong");
+	        text.put("closeContext", "true");
+			return Response.ok().entity(text).build();
+		}
+		
 	}
 	
 	public ArrayList<ItemType> searchItemTypesbyQuery(String query) throws Exception {
@@ -364,16 +429,64 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response getAWGSItemTypesbyQuery(@PathParam("tabname") String tabname, @PathParam("query") String query) throws Throwable {
-		String types = null;
+		//String types = null;
+		JSONObject text = new JSONObject();
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
 		try {
 			itemTypeList = this.getItemTypesbyQuery(tabname, query);
-			Gson gson = new Gson();
-			types = gson.toJson(itemTypeList);
+			//Gson gson = new Gson();
+			//types = gson.toJson(itemTypeList);
+			text.put("text", itemTypeList);
+			text.put("closeContext", "true");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return Response.ok().entity(types).build();
+		return Response.ok().entity(text).build();
+	}
+	
+	@POST
+	@Path("/getypebot")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "getAWGSbotItemsbyQuery - Get the AWGS items by id/url/name/owner",
+			notes = "")
+	
+	public Response getAWGSbotTypesbyQuery(String body) throws ParseException {
+
+		JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject triggeredBody = (JSONObject) p.parse(body);
+		String tablname = triggeredBody.getAsString("msg").substring(18,19);
+		String query = "";
+		switch(tablname) {
+		case "i":
+			tablname = "id";
+			query = triggeredBody.getAsString("msg").substring(21);
+			break;
+		case "d":
+			tablname = "description";
+			query = triggeredBody.getAsString("msg").substring(24);
+			break;
+		case "n":
+			tablname = "name";
+			query = triggeredBody.getAsString("msg").substring(23);
+			break;
+		}
+		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
+		try {
+			itemTypeList = this.getItemTypesbyQuery(tablname,query);
+			String gtext = this.getTypetext(itemTypeList);
+			text.put("text", gtext);
+	        text.put("closeContext", "true");
+	        return Response.ok().entity(text).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			text.put("text", "there is something wrong");
+	        text.put("closeContext", "true");
+			return Response.ok().entity(text).build();
+		}
+		
 	}
 	
 	public ArrayList<ItemType> getItemTypesbyQuery(String tabname, String query) throws Exception {
@@ -401,4 +514,32 @@ public class AWGSbotServiceMainClass extends RESTService {
 		return itemTypeList;
 	}
 
+	public String gettext(ArrayList<Item> itemList) {
+		//JSONObject text = new JSONObject();
+		String text = "";
+		for (int i=0; i<itemList.size(); i++) {
+			Item obj = itemList.get(i);
+			String iid = obj.getId();
+			String iname = obj.getName();
+			//String idesp = obj.getDescription();
+			String iurl = obj.getUrl();
+			String itype = obj.getType();
+			String iowner = obj.getOwner();
+			text = text + "id: "+iid+", name: "+iname+", url: "+iurl+", type: "+itype+", owner: "+iowner+'\n';
+		}
+        return text;
+	}
+	
+	public String getTypetext(ArrayList<ItemType> itemTypeList) {
+
+		String text = "";
+		for (int i=0; i<itemTypeList.size(); i++) {
+			ItemType obj = itemTypeList.get(i);
+			String iid = obj.getId();
+			String iname = obj.getName();
+			String idesp = obj.getDescription();
+			text = text + "id: "+iid+", name: "+iname+", description: "+idesp+'\n';
+		}
+        return text;
+	}
 }
