@@ -393,7 +393,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String query = triggeredBody.getAsString("msg").substring(13);
+		String query = triggeredBody.getAsString("msg").substring(18);
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
 		try {
 			itemTypeList = this.searchItemTypesbyQuery(query);
@@ -457,20 +457,20 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String tablname = triggeredBody.getAsString("msg").substring(18,19);
+		String tablname = triggeredBody.getAsString("msg").substring(14,15);
 		String query = "";
 		switch(tablname) {
 		case "i":
 			tablname = "id";
-			query = triggeredBody.getAsString("msg").substring(21);
+			query = triggeredBody.getAsString("msg").substring(17);
 			break;
 		case "d":
 			tablname = "description";
-			query = triggeredBody.getAsString("msg").substring(24);
+			query = triggeredBody.getAsString("msg").substring(19);
 			break;
 		case "n":
 			tablname = "name";
-			query = triggeredBody.getAsString("msg").substring(23);
+			query = triggeredBody.getAsString("msg").substring(19);
 			break;
 		}
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
