@@ -2,6 +2,7 @@ package i5.las2peer.services.AWGSbotService;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 import javax.ws.rs.Consumes;
@@ -304,7 +305,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 		return itemList;
 	}
 
-	//all codes for get types of items
+	//ALL CODES FOR GET TYPES OF ITEMS
 	@GET
 	@Path("/types")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -525,7 +526,8 @@ public class AWGSbotServiceMainClass extends RESTService {
 			String iurl = obj.getUrl();
 			String itype = obj.getType();
 			String iowner = obj.getOwner();
-			text = text + "id: "+iid+", name: "+iname+", url: "+iurl+", type: "+itype+", owner: "+iowner+'\n';
+			Timestamp iupdate = obj.getLastupdate();
+			text = text + "ID: "+iid+", NAME: "+iname+", URL: "+iurl+", TYPE: "+itype+", OWNER: "+iowner+", LAST UPDATE: "+iupdate+'\n';
 		}
         return text;
 	}
@@ -538,7 +540,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 			String iid = obj.getId();
 			String iname = obj.getName();
 			String idesp = obj.getDescription();
-			text = text + "id: "+iid+", name: "+iname+", description: "+idesp+'\n';
+			text = text + "ID: "+iid+", NAME: "+iname+", DESCRIPTION: "+idesp+'\n';
 		}
         return text;
 	}

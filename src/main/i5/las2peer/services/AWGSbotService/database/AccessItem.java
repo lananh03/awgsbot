@@ -66,6 +66,7 @@ public class AccessItem {
 				itemObj.setType(rs.getString("type"));
 				itemObj.setUrl(rs.getNString("url"));
 				itemObj.setOwner(rs.getNString("owner"));	
+				itemObj.setLastupdate(rs.getTimestamp("lastupdate"));
 				itemList.add(itemObj);
 			}
 		} catch (SQLException e) {
