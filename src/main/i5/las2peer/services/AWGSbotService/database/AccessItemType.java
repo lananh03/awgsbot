@@ -12,7 +12,7 @@ public class AccessItemType {
 
 		// get all types of items
 		public ArrayList<ItemType> getItemTypes(Connection con) throws SQLException {
-			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE ORDER BY id DESC");
+			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE ORDER BY id ASC");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);
@@ -20,7 +20,7 @@ public class AccessItemType {
 		
 		// get type by id
 		public ArrayList<ItemType> getItemTypesbyId(Connection con, String id) throws SQLException {
-			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE id ='" + id + "'ORDER BY id DESC");
+			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE id ='" + id + "'ORDER BY id ASC");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);
@@ -28,7 +28,7 @@ public class AccessItemType {
 		
 		// get type by name
 		public ArrayList<ItemType> getItemTypesbyName(Connection con, String name) throws SQLException {
-			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name ='" + name + "'ORDER BY id DESC");
+			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name ='" + name + "'ORDER BY id ASC");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);
@@ -45,7 +45,7 @@ public class AccessItemType {
 		// search items' types by query
 		public ArrayList<ItemType> searchItemTypesbyQuery(Connection con, String query) throws SQLException {
 			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name like'" + "%" + query + "%" + 
-					"'or id like'" + "%" + query + "%" + "'or description like '" + "%" + query + "%" + "'ORDER BY id DESC");
+					"'or id like'" + "%" + query + "%" + "'or description like '" + "%" + query + "%" + "'ORDER BY id ASC");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);

@@ -122,7 +122,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 	        return Response.status(Status.OK).entity(text).build();
 		} catch (Exception e) {
 			e.printStackTrace();
-			text.put("text", "I don't understand");
+			text.put("text", "I don't understand. Please follow the Command list!");
 		    text.put("closeContext", "true");
 		    return Response.status(Status.OK).entity(text).build();
 		} 
@@ -186,7 +186,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 	        return Response.ok().entity(text).build();
 		} catch (Exception e) {
 			e.printStackTrace();
-			text.put("text", "there is something wrong");
+			text.put("text", "There is something wrong. Please follow the Command list!");
 	        text.put("closeContext", "true");
 			return Response.ok().entity(text).build();
 		}
@@ -270,7 +270,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 	        return Response.ok().entity(text).build();
 		} catch (Exception e) {
 			e.printStackTrace();
-			text.put("text", "there is something wrong");
+			text.put("text", "There is something wrong. Please follow the Command list!");
 	        text.put("closeContext", "true");
 			return Response.ok().entity(text).build();
 		}
@@ -344,6 +344,8 @@ public class AWGSbotServiceMainClass extends RESTService {
 			text.put("closeContext", "true");
 		} catch (Exception e) {
 			e.printStackTrace();
+			text.put("text", "Please follow the Command list!");
+			text.put("closeContext", "true");
 		}
 		return Response.ok().entity(text).build();
 	}
@@ -394,7 +396,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String query = triggeredBody.getAsString("msg").substring(18);
+		String query = triggeredBody.getAsString("msg").substring(17);
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
 		try {
 			itemTypeList = this.searchItemTypesbyQuery(query);
@@ -403,7 +405,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 	        return Response.ok().entity(text).build();
 		} catch (Exception e) {
 			e.printStackTrace();
-			text.put("text", "there is something wrong");
+			text.put("text", "There is something wrong. Please follow the Command list!");
 	        text.put("closeContext", "true");
 			return Response.ok().entity(text).build();
 		}
@@ -458,20 +460,20 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String tablname = triggeredBody.getAsString("msg").substring(14,15);
+		String tablname = triggeredBody.getAsString("msg").substring(10,11);
 		String query = "";
 		switch(tablname) {
 		case "i":
 			tablname = "id";
-			query = triggeredBody.getAsString("msg").substring(17);
+			query = triggeredBody.getAsString("msg").substring(13);
 			break;
 		case "d":
 			tablname = "description";
-			query = triggeredBody.getAsString("msg").substring(19);
+			query = triggeredBody.getAsString("msg").substring(15);
 			break;
 		case "n":
 			tablname = "name";
-			query = triggeredBody.getAsString("msg").substring(19);
+			query = triggeredBody.getAsString("msg").substring(15);
 			break;
 		}
 		ArrayList<ItemType> itemTypeList = new ArrayList<ItemType>();
@@ -483,8 +485,8 @@ public class AWGSbotServiceMainClass extends RESTService {
 	        return Response.ok().entity(text).build();
 		} catch (Exception e) {
 			e.printStackTrace();
-			text.put("text", "there is something wrong");
-	        text.put("closeContext", "true");
+			text.put("text", "Please follow the Command list!");
+			text.put("closeContext", "true");
 			return Response.ok().entity(text).build();
 		}
 		
