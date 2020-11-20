@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -241,29 +242,28 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String tablname = triggeredBody.getAsString("msg").substring(9,10);
+		//Iterator<?> keys = triggeredBody.keySet().iterator();
+		//String colname = (String) keys.next();
+		//String query = triggeredBody.getAsString(colname);
 		String query = "";
-		switch(tablname) {
+		String colname = triggeredBody.getAsString("msg").substring(9,10);
+		switch(colname) {
 		case "i":
-			tablname = "id";
+			colname = "id";
 			query = triggeredBody.getAsString("msg").substring(12);
 			break;
 		case "o":
-			tablname = "owner";
+			colname = "owner";
 			query = triggeredBody.getAsString("msg").substring(15);
 			break;
-		case "u":
-			tablname = "url";
-			query = triggeredBody.getAsString("msg").substring(13);
-			break;
 		case "n":
-			tablname = "name";
+			colname = "name";
 			query = triggeredBody.getAsString("msg").substring(14);
 			break;
-		}
+		} 
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		try {
-			itemList = this.getItemsbyQuery(tablname,query);
+			itemList = this.getItemsbyQuery(colname,query);
 			String gtext = this.gettext(itemList);
 			text.put("text", gtext);
 	        text.put("closeContext", "true");
@@ -277,11 +277,11 @@ public class AWGSbotServiceMainClass extends RESTService {
 		
 	}
 	
-	public ArrayList<Item> getItemsbyQuery(String tabname, String query) throws Exception {
+	public ArrayList<Item> getItemsbyQuery(String colname, String query) throws Exception {
 		ArrayList<Item> itemList = new ArrayList<Item>();
 		AccessItem access = new AccessItem();
 		try {
-			switch(tabname) {
+			switch(colname) {
 			  case "id":
 				itemList = access.getItemsbyId(conDB(),query);
 			    break;

@@ -28,7 +28,7 @@ public class AccessItemType {
 		
 		// get type by name
 		public ArrayList<ItemType> getItemTypesbyName(Connection con, String name) throws SQLException {
-			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name ='" + name + "'ORDER BY id ASC");
+			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name like'" + name + "'ORDER BY id ASC");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);
