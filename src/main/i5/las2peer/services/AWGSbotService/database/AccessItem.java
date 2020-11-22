@@ -23,6 +23,14 @@ public class AccessItem {
 		return this.xQuery(rs);
 	}
 	
+	// delete item by id
+		public int deleteItemsbyId(Connection con, String id) throws SQLException {
+			int delStats = 0;
+			PreparedStatement stmt = con.prepareStatement("DELETE FROM ITEM WHERE id ='" + id + "'");
+			delStats = stmt.executeUpdate();
+			return delStats;
+		}
+	
 	// get items by owner
 	public ArrayList<Item> getItemsbyOwner(Connection con, String owner) throws SQLException {
 		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM WHERE owner like'" + "%" + owner + "%" + "'ORDER BY id DESC");
