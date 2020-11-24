@@ -7,6 +7,15 @@ import i5.las2peer.services.AWGSbotService.item.Item;
 
 public class AccessItem {
 	
+	// register new items
+	public int registerItems(Connection con, String id, String name, String description, String url, int type, String owner, Timestamp lastupdate) throws SQLException {
+		int stats = 0;
+		PreparedStatement stmt = con.prepareStatement("INSERT INTO ITEM VALUES ('" + id + "','" + name + "','"
+				+ description + "','" + url + "','" + type + "','" + owner + "','" + lastupdate + "')");
+		stats = stmt.executeUpdate();
+		return stats;
+	}
+	
 	// get all items
 	public ArrayList<Item> getItems(Connection con) throws SQLException {
 		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM ORDER BY id DESC");
@@ -23,13 +32,20 @@ public class AccessItem {
 		return this.xQuery(rs);
 	}
 	
+	// get last item oder by id
+	public ArrayList<Item> getlastItem(Connection con) throws SQLException {
+		PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEM ORDER BY id DESC LIMIT 0,1");
+		ResultSet rs = stmt.executeQuery();
+		return this.xQuery(rs);
+	}
+	
 	// delete item by id
-		public int deleteItemsbyId(Connection con, String id) throws SQLException {
-			int delStats = 0;
-			PreparedStatement stmt = con.prepareStatement("DELETE FROM ITEM WHERE id ='" + id + "'");
-			delStats = stmt.executeUpdate();
-			return delStats;
-		}
+	public int deleteItemsbyId(Connection con, String id) throws SQLException {
+		int delStats = 0;
+		PreparedStatement stmt = con.prepareStatement("DELETE FROM ITEM WHERE id ='" + id + "'");
+		delStats = stmt.executeUpdate();
+		return delStats;
+	}
 	
 	// get items by owner
 	public ArrayList<Item> getItemsbyOwner(Connection con, String owner) throws SQLException {

@@ -1,9 +1,11 @@
 package i5.las2peer.services.AWGSbotService;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 
 import javax.swing.text.BadLocationException;
@@ -210,13 +212,94 @@ public class AWGSbotServiceMainClass extends RESTService {
 		return Response.ok().entity(text).build();
 	}
 	
-	
 	private int deleleItems(String id) throws Exception {
 		// TODO Auto-generated method stub
 		AccessItem access = new AccessItem();
 		return access.deleteItemsbyId(conDB(), id);
 	}
+	
+	@POST
+	@Path("/registerItems")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Register a new item",
+			notes = "")
+	
+	public Response registerAWGSbotItems(String body) throws Exception {
+		JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject trigBody = (JSONObject) p.parse(body);
+		String msg = trigBody.getAsString("msg");
+		String owner = trigBody.getAsString("email");
+		String[] regItem = handleString(msg,"awgs register");
+		String typeName = regItem[0].trim();
+		String name = regItem[1].trim();
+		String desp = regItem[2].trim();
+		String url = regItem[3].trim();
+		String id = this.getNextItemId();
+		int type = 0;
+		int res = 0;
+		//int type = Integer.parseInt(typeName);
+		AccessItemType itemType = new AccessItemType();
+		ArrayList<ItemType> i = itemType.getItemTypesbyName(conDB(),typeName);
+		if (i!=null && i.size()!=0) {
+			type = i.get(0).getId();
+		}
+		Timestamp lastupdate = new Timestamp(System.currentTimeMillis()); 
+		if (owner!=null) {
+			res = this.registerItem(id, name, desp, url, type, owner, lastupdate);
+		} else {
+			text.put("text", "awgsbot can't get the owner by email");
+			text.put("closeContext", "true");
+		}
+		if (res!=0) {
+			text.put("text", "Register successfully!");
+			text.put("closeContext", "true");
+		} else {
+			text.put("text", "Please try again later!");
+			text.put("closeContext", "true");
+		}
+		return Response.ok().entity(text).build();
+	}
+	
+	public int registerItem(String id, String name, String description, String url, int type, String owner, Timestamp lastupdate) throws SQLException, Exception {
+		AccessItem access = new AccessItem();
+		return access.registerItems(conDB(), id, name, description, url, type, owner, lastupdate);
+	}
+	
+	public String[] handleString(String msg, String cmd) {
+		String[] info = null;
+		if (msg.trim().startsWith(cmd)) {
+			String[] str = msg.split(cmd);
+			info = str[1].split(",");
+		}
+		return info;
+	}
+	
+	public String getNextItemId() throws SQLException, Exception {
+		AccessItem item = new AccessItem();
+		ArrayList<Item> lastItem = item.getlastItem(conDB());
+		String lastId = lastItem.get(0).getId();
+		String ynn = lastId.split("AWGS-")[1]; //from dominik.renzel@googlemail.com
+		String[] ynarr = ynn.split("-"); 
+		int year = Integer.parseInt(ynarr[0]);
+		int num = Integer.parseInt(ynarr[1]);
+		int curryear = Calendar.getInstance().get(Calendar.YEAR);
+		//int newnum = num;
+		//int newyear = year;
+		if(year == curryear){
+			num++;
+		} else {
+			year = curryear;
+			num = 1;
+		}
+		String newyearStr = String.format("%04d", year);
+		String newnumStr = String.format("%03d", num);
 
+		return "AWGS-" + newyearStr + "-" + newnumStr;
+	}
+	
 	@POST
 	@Path("/getitembot")
 	@Consumes(MediaType.TEXT_PLAIN)
@@ -467,11 +550,12 @@ public class AWGSbotServiceMainClass extends RESTService {
 		String text = "";
 		for (int i=0; i<itemTypeList.size(); i++) {
 			ItemType obj = itemTypeList.get(i);
-			String iid = obj.getId();
+			int iid = obj.getId();
 			String iname = obj.getName();
 			String idesp = obj.getDescription();
 			text = text + "ID: "+iid+", NAME: "+iname+", DESCRIPTION: "+idesp+'\n';
 		}
         return text;
 	}
+	
 }

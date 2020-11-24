@@ -20,7 +20,7 @@ public class AccessItemType {
 		
 		// get type by id
 		public ArrayList<ItemType> getItemTypesbyId(Connection con, String id) throws SQLException {
-			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE id ='" + id + "'ORDER BY id ASC");
+			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE id ='" + id + "'");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);
@@ -28,7 +28,7 @@ public class AccessItemType {
 		
 		// get type by name
 		public ArrayList<ItemType> getItemTypesbyName(Connection con, String name) throws SQLException {
-			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name like'" + name + "'ORDER BY id ASC");
+			PreparedStatement stmt = con.prepareStatement("SELECT * FROM ITEMTYPE WHERE name ='" + name + "'");
 			ResultSet rs = stmt.executeQuery();
 			
 			return this.xQuery(rs);
@@ -56,7 +56,7 @@ public class AccessItemType {
 			try {
 				while (rs.next()) {
 					ItemType itemObj = new ItemType();
-					itemObj.setId(rs.getString("id"));
+					itemObj.setId(rs.getInt("id"));
 					itemObj.setName(rs.getString("name"));
 					itemObj.setDescription(rs.getString("description"));	
 					itemTypeList.add(itemObj);
