@@ -1,17 +1,12 @@
 package i5.las2peer.services.AWGSbotService;
 
+import java.net.HttpURLConnection;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,18 +16,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.gson.Gson;
-
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -41,6 +34,8 @@ import i5.las2peer.services.AWGSbotService.database.AccessItemType;
 import i5.las2peer.services.AWGSbotService.database.Database;
 import i5.las2peer.services.AWGSbotService.item.Item;
 import i5.las2peer.services.AWGSbotService.itemtype.ItemType;
+import i5.las2peer.services.AWGSbotService.user.AccessUser;
+import i5.las2peer.services.AWGSbotService.user.User;
 
 /**
  * las2peer-AWGS-Service
@@ -73,6 +68,8 @@ public class AWGSbotServiceMainClass extends RESTService {
 	private int dbPort;
 	private String dbName;
 	private Database database;
+	//public static Boolean usrright = false;
+	public static User u = new User();
 	
 	public AWGSbotServiceMainClass() {
 		//read and set properties values
@@ -166,21 +163,6 @@ public class AWGSbotServiceMainClass extends RESTService {
 	}
 	
 	@POST
-	@Path("/createItems")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(
-			value = "Create new items",
-			notes = "")
-	
-	public Response createAWGSbotItems(String body) {
-		Item item = new Item();
-		JSONObject text = new JSONObject();
-		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		return Response.ok().entity(text).build();
-	}
-	
-	@POST
 	@Path("/deleteItems")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -219,6 +201,31 @@ public class AWGSbotServiceMainClass extends RESTService {
 	}
 	
 	@POST
+	@Path("/checkUser")
+	@Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
+	@ApiOperation(
+			value = "Register a new item",
+			notes = "")
+	public Response checkUser (String body) throws SQLException, Exception {
+		AccessUser access = new AccessUser();
+		
+		//JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject trigBody = (JSONObject) p.parse(body);
+		String userSub = trigBody.getAsString("sub");
+		System.out.println(userSub);
+		u = access.AuthStas(conDB(), userSub);
+		return Response.ok().entity(u).build();
+		/*if (access.AuthStas(conDB(), userSub) == 1) {
+			usrright = true;
+		}
+		System.out.println(usrright); 
+		return usrright; */
+	}
+	
+	
+	@POST
 	@Path("/registerItems")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -230,36 +237,40 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject trigBody = (JSONObject) p.parse(body);
-		String msg = trigBody.getAsString("msg");
-		String owner = trigBody.getAsString("email");
-		String[] regItem = handleString(msg,"awgs register");
-		String typeName = regItem[0].trim();
-		String name = regItem[1].trim();
-		String desp = regItem[2].trim();
-		String url = regItem[3].trim();
-		String id = this.getNextItemId();
-		int type = 0;
-		int res = 0;
-		//int type = Integer.parseInt(typeName);
-		AccessItemType itemType = new AccessItemType();
-		ArrayList<ItemType> i = itemType.getItemTypesbyName(conDB(),typeName);
-		if (i!=null && i.size()!=0) {
-			type = i.get(0).getId();
+		System.out.println(u.getSub());
+		if (u.getAuthorization() == 1) {
+			String msg = trigBody.getAsString("msg");
+			String owner = trigBody.getAsString("email");
+			String[] regItem = handleString(msg,"awgs register");
+			String typeName = regItem[0].trim();
+			String name = regItem[1].trim();
+			String desp = regItem[2].trim();
+			String url = regItem[3].trim();
+			String id = this.getNextItemId();
+			int type = 0;
+			int res = 0;
+			//int type = Integer.parseInt(typeName);
+			AccessItemType itemType = new AccessItemType();
+			ArrayList<ItemType> i = itemType.getItemTypesbyName(conDB(),typeName);
+			if (i!=null && i.size()!=0) {
+				type = i.get(0).getId();
+			}
+			Timestamp lastupdate = new Timestamp(System.currentTimeMillis()); 
+			if (owner!=null) {
+				res = this.registerItem(id, name, desp, url, type, owner, lastupdate);
+			} else {
+				text.put("text", "awgsbot can't get the owner by email");
+				text.put("closeContext", "true");
+			}
+			if (res!=0) {
+				text.put("text", "Register successfully!");
+				text.put("closeContext", "true");
+			} else {
+				text.put("text", "Please try again later!");
+				text.put("closeContext", "true");
+			}
 		}
-		Timestamp lastupdate = new Timestamp(System.currentTimeMillis()); 
-		if (owner!=null) {
-			res = this.registerItem(id, name, desp, url, type, owner, lastupdate);
-		} else {
-			text.put("text", "awgsbot can't get the owner by email");
-			text.put("closeContext", "true");
-		}
-		if (res!=0) {
-			text.put("text", "Register successfully!");
-			text.put("closeContext", "true");
-		} else {
-			text.put("text", "Please try again later!");
-			text.put("closeContext", "true");
-		}
+		
 		return Response.ok().entity(text).build();
 	}
 	
@@ -286,8 +297,6 @@ public class AWGSbotServiceMainClass extends RESTService {
 		int year = Integer.parseInt(ynarr[0]);
 		int num = Integer.parseInt(ynarr[1]);
 		int curryear = Calendar.getInstance().get(Calendar.YEAR);
-		//int newnum = num;
-		//int newyear = year;
 		if(year == curryear){
 			num++;
 		} else {
@@ -298,6 +307,28 @@ public class AWGSbotServiceMainClass extends RESTService {
 		String newnumStr = String.format("%03d", num);
 
 		return "AWGS-" + newyearStr + "-" + newnumStr;
+	}
+	
+	@POST
+	@Path("/botlogin")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Send the link of login page",
+			notes = "")
+	
+	public Response botLogin(String body) throws ParseException {
+		JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject trigBody = (JSONObject) p.parse(body);
+		String msg = trigBody.getAsString("msg");
+		String url = "http://127.0.0.1:8888";
+		if (msg != null) {
+			text.put("text", "Please login first: " + url + '\n' + 
+					"Then please follow this syntax: awgs register <type>, <name>, <description>, <url>");
+			text.put("closeContext", "true");
+		}
+		return Response.ok().entity(text).build();
 	}
 	
 	@POST
