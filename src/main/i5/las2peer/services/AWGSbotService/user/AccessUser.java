@@ -8,7 +8,7 @@ import java.sql.SQLException;
 public class AccessUser {
 	
 	// get authorization of user by sub
-	public User AuthStas (Connection con, String sub) throws SQLException {
+	public User AuthStas (Connection con, String sub, String email) throws SQLException {
 		//int auth = 0;
 		User user = new User();
 		PreparedStatement stmt = con.prepareStatement("SELECT AUTHORIZATION FROM USER WHERE SUB ='" + sub + "'");
@@ -16,7 +16,7 @@ public class AccessUser {
 		while (rs.next()) {
 			user.setAuthorization(rs.getInt("authorization"));
 			user.setSub(sub);
-			//user.setEmail(email);
+			user.setEmail(email);
 		}
 		return user;
 	}

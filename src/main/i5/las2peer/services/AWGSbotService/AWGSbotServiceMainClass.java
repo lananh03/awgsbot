@@ -69,7 +69,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 	private String dbName;
 	private Database database;
 	//public static Boolean usrright = false;
-	public static User u = new User();
+	public static User user = new User();
 	
 	public AWGSbotServiceMainClass() {
 		//read and set properties values
@@ -171,25 +171,34 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response deleteAWGSbotItems(String body) throws Exception {
-		AccessItem access = new AccessItem();
+		System.out.println(user.getAuthorization());
+		System.out.println(user.getEmail());
 		JSONObject text = new JSONObject();
-		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		JSONObject triggeredBody = (JSONObject) p.parse(body);
-		String email = triggeredBody.getAsString("email");
-		String id = triggeredBody.getAsString("id");
-		String owner = access.getItemsbyId(conDB(),id).get(0).getOwner();
-		if (!owner.equals(email) ){
-			text.put("text", "You don't have the right to delete this item!");
-			text.put("closeContext", "true");
-		} else {
-			if (this.deleleItems(id) != 0) {
-				text.put("text", "Delete successfully!");
-				text.put("closeContext", "true");
-			} else {
-				text.put("text", "Can't find that id");
-				text.put("closeContext", "true");
-			} 
-		} 
+		if (user.getAuthorization() == 1) {
+			AccessItem access = new AccessItem();
+			JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+			JSONObject triggeredBody = (JSONObject) p.parse(body);
+			String email = triggeredBody.getAsString("email");
+			if (user.getEmail().equals(email)) {
+				String id = triggeredBody.getAsString("id");
+				String owner = access.getItemsbyId(conDB(),id).get(0).getOwner();
+				if (!owner.equals(email) ){
+					text.put("text", "You don't have the right to delete this item!");
+					text.put("closeContext", "true");
+				} else {
+					if (this.deleleItems(id) != 0) {
+						text.put("text", "Delete successfully!");
+						text.put("closeContext", "true");
+					} else {
+						text.put("text", "Can't find that id");
+						text.put("closeContext", "true");
+					} 
+				} 
+			}			
+			user.setAuthorization(0);
+			user.setSub("");
+			user.setEmail("");
+		}
 		
 		return Response.ok().entity(text).build();
 	}
@@ -198,6 +207,30 @@ public class AWGSbotServiceMainClass extends RESTService {
 		// TODO Auto-generated method stub
 		AccessItem access = new AccessItem();
 		return access.deleteItemsbyId(conDB(), id);
+	}
+	
+	@POST
+	@Path("/botlogin")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(
+			value = "Send the link of login page",
+			notes = "")
+	
+	public Response botLogin(String body) throws ParseException {
+		JSONObject text = new JSONObject();
+		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject trigBody = (JSONObject) p.parse(body);
+		String msg = trigBody.getAsString("msg");
+		user.setEmail(trigBody.getAsString("email"));
+		String url = "http://127.0.0.1:8888";
+		if (msg != null) {
+			text.put("text", "Please login first: " + url + '\n' + 
+					"Then please follow this syntax: awgs register <type>, <name>, <description>, <url> - To register new item" +
+					'\n' + "Or awgs delete <id> - To delete an item");
+			text.put("closeContext", "true");
+		}
+		return Response.ok().entity(text).build();
 	}
 	
 	@POST
@@ -215,8 +248,9 @@ public class AWGSbotServiceMainClass extends RESTService {
 		JSONObject trigBody = (JSONObject) p.parse(body);
 		String userSub = trigBody.getAsString("sub");
 		System.out.println(userSub);
-		u = access.AuthStas(conDB(), userSub);
-		return Response.ok().entity(u).build();
+		System.out.println(user.getEmail());
+		user = access.AuthStas(conDB(), userSub, user.getEmail());
+		return Response.ok().entity(user).build();
 		/*if (access.AuthStas(conDB(), userSub) == 1) {
 			usrright = true;
 		}
@@ -234,13 +268,15 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response registerAWGSbotItems(String body) throws Exception {
+		System.out.println(user.getAuthorization());
+		System.out.println(user.getEmail());
 		JSONObject text = new JSONObject();
-		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		JSONObject trigBody = (JSONObject) p.parse(body);
-		System.out.println(u.getSub());
-		if (u.getAuthorization() == 1) {
+		if (user.getAuthorization() == 1) {			
+			JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
+			JSONObject trigBody = (JSONObject) p.parse(body);
 			String msg = trigBody.getAsString("msg");
 			String owner = trigBody.getAsString("email");
+			System.out.println(owner);
 			String[] regItem = handleString(msg,"awgs register");
 			String typeName = regItem[0].trim();
 			String name = regItem[1].trim();
@@ -256,7 +292,7 @@ public class AWGSbotServiceMainClass extends RESTService {
 				type = i.get(0).getId();
 			}
 			Timestamp lastupdate = new Timestamp(System.currentTimeMillis()); 
-			if (owner!=null) {
+			if (user.getEmail().equals(owner)) {
 				res = this.registerItem(id, name, desp, url, type, owner, lastupdate);
 			} else {
 				text.put("text", "awgsbot can't get the owner by email");
@@ -269,6 +305,9 @@ public class AWGSbotServiceMainClass extends RESTService {
 				text.put("text", "Please try again later!");
 				text.put("closeContext", "true");
 			}
+			user.setAuthorization(0);
+			user.setSub("");
+			user.setEmail("");
 		}
 		
 		return Response.ok().entity(text).build();
@@ -307,28 +346,6 @@ public class AWGSbotServiceMainClass extends RESTService {
 		String newnumStr = String.format("%03d", num);
 
 		return "AWGS-" + newyearStr + "-" + newnumStr;
-	}
-	
-	@POST
-	@Path("/botlogin")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(
-			value = "Send the link of login page",
-			notes = "")
-	
-	public Response botLogin(String body) throws ParseException {
-		JSONObject text = new JSONObject();
-		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		JSONObject trigBody = (JSONObject) p.parse(body);
-		String msg = trigBody.getAsString("msg");
-		String url = "http://127.0.0.1:8888";
-		if (msg != null) {
-			text.put("text", "Please login first: " + url + '\n' + 
-					"Then please follow this syntax: awgs register <type>, <name>, <description>, <url>");
-			text.put("closeContext", "true");
-		}
-		return Response.ok().entity(text).build();
 	}
 	
 	@POST
