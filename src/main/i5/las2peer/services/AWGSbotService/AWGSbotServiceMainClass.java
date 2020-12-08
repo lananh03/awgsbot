@@ -1,16 +1,13 @@
 package i5.las2peer.services.AWGSbotService;
 
-import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -21,7 +18,6 @@ import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
@@ -218,16 +214,18 @@ public class AWGSbotServiceMainClass extends RESTService {
 			notes = "")
 	
 	public Response botLogin(String body) throws ParseException {
+		user.setSub("");
+		user.setAuthorization(0);
 		JSONObject text = new JSONObject();
 		JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject trigBody = (JSONObject) p.parse(body);
 		String msg = trigBody.getAsString("msg");
 		user.setEmail(trigBody.getAsString("email"));
+		System.out.println(user.getEmail());
 		String url = "http://127.0.0.1:8888";
 		if (msg != null) {
 			text.put("text", "Please login first: " + url + '\n' + 
-					"Then please follow this syntax: awgs register <type>, <name>, <description>, <url> - To register new item" +
-					'\n' + "Or awgs delete <id> - To delete an item");
+					"Then please follow this syntax: awgs register <type>, <name>, <description>, <url> - To register new item");
 			text.put("closeContext", "true");
 		}
 		return Response.ok().entity(text).build();
@@ -305,9 +303,10 @@ public class AWGSbotServiceMainClass extends RESTService {
 				text.put("text", "Please try again later!");
 				text.put("closeContext", "true");
 			}
-			user.setAuthorization(0);
-			user.setSub("");
-			user.setEmail("");
+			
+		} else {
+			text.put("text", "You don't have the right!");
+			text.put("closeContext", "true");
 		}
 		
 		return Response.ok().entity(text).build();
